@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace DemoPassword.Person_UseCase
 {
+    public class MapperConfiguration { }
     public class PersonMapper
     {
+        public PersonMapper(MapperConfiguration config) { }
         public PersonDto[] PersonModelToUserDto(PersonModel[] onModels)
         {
             return onModels.Select(onModel => new PersonDto
