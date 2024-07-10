@@ -6,15 +6,17 @@ using System.Threading.Tasks;
 
 namespace DemoPassword.Person_UseCase
 {
-    public class MapperConfiguration { }
+    public interface IMapperConfiguration { }
     public class PersonMapper
     {
-        public PersonMapper(MapperConfiguration config) { }
+        public PersonMapper(IMapperConfiguration config) { }
         public PersonDto[] PersonModelToUserDto(PersonModel[] onModels)
         {
-            return onModels.Select(onModel => new PersonDto
-            {
-            }).ToArray();
+            return onModels.Select(onModel => new PersonDto(
+                onModel.FirstName, onModel.LastName, onModel.Email
+                ))  .ToArray();
         }
     }
+
+    public class LowerCaseMapperConfiguration : IMapperConfiguration { } 
 }
