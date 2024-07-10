@@ -1,4 +1,10 @@
 ﻿using DemoPassword.Person_UseCase;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DemoPasswordTests
 {
@@ -10,30 +16,30 @@ namespace DemoPasswordTests
         private const string fn2 = "John";
         private const string ln2 = "Doe";
         private const string em2 = "john@doe.com";
-        MapperConfiguration defaultMappingConfig = new();
+        IMapperConfiguration lowercaseMappingConfig = new LowerCaseMapperConfiguration();
 
         [Test]
-        public void Test_Mapping_PersonModelToUserDto_WithIndirections()
+        public void Test_LowerCaseMapping_PersonModelToUserDto_WithIndirections()
         {
             PersonModel personModel1 = new() { FirstName = fn1, LastName = ln1, Email = em1 };
             PersonModel personModel2 = new() { FirstName = fn2, LastName = ln2, Email = em2 };
             PersonModel[] personModelsArray = [personModel1, personModel2];
-            PersonMapper personMapper = new(defaultMappingConfig);
+            PersonMapper personMapper = new(lowercaseMappingConfig);
 
-            PersonDto[] personDtos = personMapper.PersonModelToUserDto(personModelsArray);
+            PersonDto[] dtos = personMapper.PersonModelToUserDto(personModelsArray);
+            
+            Assert.AreEqual(fn1.ToLower(), dtos[0].FirstName);
+            Assert.AreEqual(ln1.ToLower(), dtos[0].LastName);
+            Assert.AreEqual(em1.ToLower(), dtos[0].Email);
 
-            Assert.AreEqual(fn1, personDtos[0].FirstName);
-            Assert.AreEqual(ln1, personDtos[0].LastName);
-            Assert.AreEqual(em1, personDtos[0].Email);
-
-            Assert.AreEqual(fn2, personDtos[1].FirstName);
-            Assert.AreEqual(ln1, personDtos[1].LastName);
-            Assert.AreEqual(em2, personDtos[1].Email);
+            Assert.AreEqual(fn2.ToLower(), dtos[1].FirstName);
+            Assert.AreEqual(ln1.ToLower(), dtos[1].LastName);
+            Assert.AreEqual(em2.ToLower(), dtos[1].Email);
         }
 
-        public void Test_Mapping_PersonModelToUserDto_FewerIndirections()
+        public void Test_LowerCaseMapping_PersonModelToUserDto_FewerIndirections()
         {
-            PersonDto[] convertedDtos = new PersonMapper(new MapperConfiguration())
+            PersonDto[] dtos = new PersonMapper(new LowerCaseMapperConfiguration())
                 .PersonModelToUserDto([
                     new PersonModel { 
                         FirstName = "John", LastName = "Doe", Email = "j@doe.com" },
@@ -41,38 +47,69 @@ namespace DemoPasswordTests
                         FirstName = "Jean", LastName = "Biche", Email = "j@biche.fr" },
                 ]);
 
-            Assert.AreEqual("John", convertedDtos[0].FirstName);
-            Assert.AreEqual("Doe", convertedDtos[0].LastName);
-            Assert.AreEqual("j@doc.com", convertedDtos[0].Email);
+            Assert.AreEqual("john", dtos[0].FirstName);
+            Assert.AreEqual("doe", dtos[0].LastName);
+            Assert.AreEqual("j@doc.com", dtos[0].Email);
 
-            Assert.AreEqual("Jean", convertedDtos[1].FirstName);
-            Assert.AreEqual("Biche", convertedDtos[1].LastName);
-            Assert.AreEqual("j@biche.fr", convertedDtos[1].Email);
+            Assert.AreEqual("jean", dtos[1].FirstName);
+            Assert.AreEqual("biche", dtos[1].LastName);
+            Assert.AreEqual("j@biche.fr", dtos[1].Email);
         }
 
-        public void Test_Mapping_PersonModelToUserDto_Archetypes()
+        public void Test_LowerCaseMapping_PersonModelToUserDto_DetailsHidden()
         {
-            PersonDto[] convertedDtos =
-                BuildDefaultMapper()
+            PersonDto[] dtos = Service()
                 .PersonModelToUserDto([
-                    new PersonModel {
-                        FirstName = "John", LastName = "Doe", Email = "j@doe.com" },
-                    new PersonModel {
-                        FirstName = "Jean", LastName = "Biche", Email = "j@biche.fr" },
+                    Model("John", "Doe", "j@doe.com"),
+                    Model("Jean", "Biche", "j@biche.fr"),
                 ]);
 
-            Assert.AreEqual("John", convertedDtos[0].FirstName);
-            Assert.AreEqual("Doe", convertedDtos[0].LastName);
-            Assert.AreEqual("j@doc.com", convertedDtos[0].Email);
-
-            Assert.AreEqual("Jean", convertedDtos[1].FirstName);
-            Assert.AreEqual("Biche", convertedDtos[1].LastName);
-            Assert.AreEqual("j@biche.fr", convertedDtos[1].Email);
+            Validate(dtos, [
+                ("john", "doe", "j@doe.com"),
+                ("jean", "biche", "j@biche.fr")
+            ]);
         }
 
-        private PersonMapper BuildDefaultMapper()
+        private void Validate(PersonDto[] dtos, (string fname, string lname, string mail)[] values) => 
+            dtos.ForEachPair(values, (dto, exp) => {
+                Assert.AreEqual(exp.fname, dto.FirstName);
+                Assert.AreEqual(exp.lname, dto.LastName);
+                Assert.AreEqual(exp.mail, dto.Email);
+            });
+
+        private static PersonModel Model(string firstName, string lastName, string email) =>
+            new PersonModel { FirstName = firstName, LastName = lastName, Email = email };
+
+        private static PersonMapper Service() => new PersonMapper(new LowerCaseMapperConfiguration());
+
+
+        public void Test_LowerCaseMapping_PersonModelToUserDto_BetterNames()
         {
-            return new PersonMapper(new MapperConfiguration())
+            PersonDto[] mappedPersonDtos = LowerCaseMapper()
+                .PersonModelToUserDto([
+                    Person("John", "Doe", "j@doe.com"),
+                    Person("Jean", "Biche", "j@biche.fr"),
+                ]);
+
+            AreEqual(mappedPersonDtos, [
+                ("john", "doe", "j@doe.com"),
+                ("jean", "biche", "j@biche.fr")
+            ]);
+        }
+
+        private static PersonModel Person(string firstName, string lastName, string email) =>
+            new PersonModel { FirstName = firstName, LastName = lastName, Email = email };
+
+        private static PersonMapper LowerCaseMapper() => new PersonMapper(new LowerCaseMapperConfiguration());
+
+        private void AreEqual(PersonDto[] dtos, (string fname, string lname, string mail)[] values)
+        {
+            dtos.ForEachPair(values, (dto, exp) =>
+            {
+                Assert.AreEqual(exp.fname, dto.FirstName);
+                Assert.AreEqual(exp.lname, dto.LastName);
+                Assert.AreEqual(exp.mail, dto.Email);
+            });
         }
     }
 }
