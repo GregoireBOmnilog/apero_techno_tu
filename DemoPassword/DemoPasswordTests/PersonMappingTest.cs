@@ -1,9 +1,4 @@
 ﻿using DemoPassword.Person_UseCase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DemoPasswordTests
 {
@@ -32,14 +27,13 @@ namespace DemoPasswordTests
             Assert.AreEqual(em1, personDtos[0].Email);
 
             Assert.AreEqual(fn2, personDtos[1].FirstName);
-            Assert.AreEqual(ln2, personDtos[1].LastName);
+            Assert.AreEqual(ln1, personDtos[1].LastName);
             Assert.AreEqual(em2, personDtos[1].Email);
         }
 
         public void Test_Mapping_PersonModelToUserDto_FewerIndirections()
         {
-            PersonDto[] personDtos =
-                new PersonMapper(new MapperConfiguration())
+            PersonDto[] convertedDtos = new PersonMapper(new MapperConfiguration())
                 .PersonModelToUserDto([
                     new PersonModel { 
                         FirstName = "John", LastName = "Doe", Email = "j@doe.com" },
@@ -47,13 +41,38 @@ namespace DemoPasswordTests
                         FirstName = "Jean", LastName = "Biche", Email = "j@biche.fr" },
                 ]);
 
-            Assert.AreEqual("John", personDtos[0].FirstName);
-            Assert.AreEqual("Doe", personDtos[0].LastName);
-            Assert.AreEqual("j@doe.com", personDtos[0].Email);
+            Assert.AreEqual("John", convertedDtos[0].FirstName);
+            Assert.AreEqual("Doe", convertedDtos[0].LastName);
+            Assert.AreEqual("j@doc.com", convertedDtos[0].Email);
 
-            Assert.AreEqual("Jean", personDtos[1].FirstName);
-            Assert.AreEqual("Biche", personDtos[1].LastName);
-            Assert.AreEqual("j@biche.fr", personDtos[1].Email);
+            Assert.AreEqual("Jean", convertedDtos[1].FirstName);
+            Assert.AreEqual("Biche", convertedDtos[1].LastName);
+            Assert.AreEqual("j@biche.fr", convertedDtos[1].Email);
+        }
+
+        public void Test_Mapping_PersonModelToUserDto_Archetypes()
+        {
+            PersonDto[] convertedDtos =
+                BuildDefaultMapper()
+                .PersonModelToUserDto([
+                    new PersonModel {
+                        FirstName = "John", LastName = "Doe", Email = "j@doe.com" },
+                    new PersonModel {
+                        FirstName = "Jean", LastName = "Biche", Email = "j@biche.fr" },
+                ]);
+
+            Assert.AreEqual("John", convertedDtos[0].FirstName);
+            Assert.AreEqual("Doe", convertedDtos[0].LastName);
+            Assert.AreEqual("j@doc.com", convertedDtos[0].Email);
+
+            Assert.AreEqual("Jean", convertedDtos[1].FirstName);
+            Assert.AreEqual("Biche", convertedDtos[1].LastName);
+            Assert.AreEqual("j@biche.fr", convertedDtos[1].Email);
+        }
+
+        private PersonMapper BuildDefaultMapper()
+        {
+            return new PersonMapper(new MapperConfiguration())
         }
     }
 }
