@@ -29,11 +29,10 @@ namespace DemoPasswordTests
             PersonDto[] dtos = personMapper.PersonModelToUserDto(personModelsArray);
             
             Assert.AreEqual(fn1.ToLower(), dtos[0].FirstName);
-            Assert.AreEqual(ln1.ToLower(), dtos[0].LastName);
-            Assert.AreEqual(em1.ToLower(), dtos[0].Email);
-
             Assert.AreEqual(fn2.ToLower(), dtos[1].FirstName);
+            Assert.AreEqual(ln1.ToLower(), dtos[0].LastName);
             Assert.AreEqual(ln1.ToLower(), dtos[1].LastName);
+            Assert.AreEqual(em1.ToLower(), dtos[0].Email);
             Assert.AreEqual(em2.ToLower(), dtos[1].Email);
         }
 
