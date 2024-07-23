@@ -63,13 +63,13 @@ namespace DemoPasswordTests
                     Model("Jean", "Biche", "j@biche.fr"),
                 ]);
 
-            Check(dtos, [
+            Validate(dtos, [
                 ("john", "doe", "j@doe.com"),
                 ("jean", "biche", "j@biche.fr")
             ]);
         }
 
-        private void Check(PersonDto[] dtos, (string fname, string lname, string mail)[] values) => 
+        private void Validate(PersonDto[] dtos, (string fname, string lname, string mail)[] values) => 
             dtos.ForEachPair(values, (dto, exp) => {
                 Assert.AreEqual(exp.fname, dto.FirstName);
                 Assert.AreEqual(exp.lname, dto.LastName);
@@ -109,40 +109,6 @@ namespace DemoPasswordTests
                 Assert.AreEqual(exp.lname, dto.LastName);
                 Assert.AreEqual(exp.mail, dto.Email);
             });
-        }
-
-        public void Test_LowerCaseMapping_PersonModelToUserDto_Gherkin()
-        {
-            TestHelper
-                .Given__A_lower_case_mapper()
-                .When__Mapping_person_models_to_user_dtos([
-                    ("John", "Doe", "j@doe.com"),
-                    ("Jean", "Biche", "j@biche.fr")
-                ])
-                .Then__User_dtos_are([
-                    ("john", "doe", "j@doe.com"),
-                    ("jean", "biche", "j@biche.fr")
-                ]);
-        }
-
-        private class TestHelper
-        {
-            private PersonMapper _mapperToTest;
-
-            public static TestHelper Given__A_lower_case_mapper() => new TestHelper
-            {
-                _mapperToTest = new PersonMapper(new LowerCaseMapperConfiguration())
-            };
-
-            public TestHelper When__Mapping_person_models_to_user_dtos(params (string fname, string lname, string mail)[] inputValues)
-            {
-                return this;
-            }
-
-            public void Then__User_dtos_are(params (string fname, string lname, string mail)[] expectedValues)
-            {
-                
-            }
         }
     }
 }
