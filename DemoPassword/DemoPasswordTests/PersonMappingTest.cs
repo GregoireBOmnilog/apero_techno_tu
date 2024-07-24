@@ -113,7 +113,7 @@ namespace DemoPasswordTests
 
         public void Test_LowerCaseMapping_PersonModelToUserDto_Gherkin()
         {
-            TestHelper
+            TestDriver
                 .Given__A_lower_case_mapper()
                 .When__Mapping_person_models_to_user_dtos([
                     ("John", "Doe", "j@doe.com"),
@@ -125,17 +125,22 @@ namespace DemoPasswordTests
                 ]);
         }
 
-        private class TestHelper
+        private class TestDriver
         {
-            private PersonMapper _mapperToTest;
+            private PersonMapper mapperToTest;
+            private PersonDto[] mappedPersonDtos;
 
-            public static TestHelper Given__A_lower_case_mapper() => new TestHelper
+            public static TestDriver Given__A_lower_case_mapper() => new TestDriver
             {
-                _mapperToTest = new PersonMapper(new LowerCaseMapperConfiguration())
+                mapperToTest = new PersonMapper(new LowerCaseMapperConfiguration())
             };
 
-            public TestHelper When__Mapping_person_models_to_user_dtos(params (string fname, string lname, string mail)[] inputValues)
+            public TestDriver When__Mapping_person_models_to_user_dtos(params (string fname, string lname, string mail)[] inputValues)
             {
+                var inputPersons = inputValues.Select(input => Person(input.fname, input.lname, input.mail));
+
+                mappedPersonDtos = mapperToTest.PersonModelToUserDto(inputPersons.ToArray());
+
                 return this;
             }
 
